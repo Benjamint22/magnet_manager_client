@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:magnet_manager/widgets/loading.dart';
 import 'package:ssh/ssh.dart';
 
 const String host = "benjamintaillon.com";
@@ -27,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Contexts
   BuildContext _scaffoldContext;
 
-  OverlayEntry _loading;
+  Loading _loading;
 
   // States
   String _errorText;
@@ -44,34 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showLoading() {
-    Overlay.of(_scaffoldContext)
-        .insert(_loading = OverlayEntry(builder: (BuildContext context) {
-          return Stack(
-            children: <Widget>[
-              Opacity(
-                opacity: 0.3,
-                child: const ModalBarrier(dismissible: false, color: Colors.grey),
-              ),
-              AlertDialog(
-                  title: Text("Attempting to connect..."),
-                  content: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [CircularProgressIndicator()],
-                  )
-                )
-            ],
-          );
-        }
-      )
-    );
-  }
-
-  void _hideLoading() {
-    _loading.remove();
-    _loading = null;
-  }
-
   // Events
   String _validatePassword(String value) {
     if (value.isEmpty) {
@@ -85,17 +58,17 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState.validate()) {
       return;
     }
-    _showLoading();
+    _loading.show("Attempting to connect...");
     SSHClient client = SSHClient(
         host: host, port: port, username: username, passwordOrKey: _password);
     String result;
     result = await _tryConnect(client).timeout(timeoutDuration, onTimeout: () {
-      _hideLoading();
+      _loading.hide();
       Scaffold.of(_scaffoldContext).showSnackBar(timeoutSnackBar);
     });
     switch (result) {
       case "connection_failure":
-        _hideLoading();
+        _loading.hide();
         setState(() {
           _errorText = "Wrong password.";
         });
@@ -114,6 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Builder(
         builder: (BuildContext context) {
           _scaffoldContext = context;
+          _loading = Loading(_scaffoldContext);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
