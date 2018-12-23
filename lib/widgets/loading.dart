@@ -36,4 +36,8 @@ class Loading {
     _overlay.remove();
     _overlay = null;
   }
+
+  bool get isOpened {
+    return _overlay != null;
+  }
 }
