@@ -7,7 +7,6 @@ import 'package:ssh/ssh.dart';
 
 const String host = "benjamintaillon.com";
 const int port = 22;
-const String username = "benjamin";
 const Duration timeoutDuration = Duration(seconds: 6);
 
 const SnackBar timeoutSnackBar = SnackBar(
@@ -34,6 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String _errorText;
 
   // Field values
+  String _username;
   String _password;
 
   // Helper functions
@@ -46,6 +46,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Events
+  String _validateUsername(String value) {
+    if (value.isEmpty) {
+      return "Please type in a username.";
+    }
+    _formKey.currentState.save();
+    return null;
+  }
+
   String _validatePassword(String value) {
     if (value.isEmpty) {
       return "Please type in a password.";
@@ -60,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     _loading.show("Attempting to connect...");
     SSHClient client = SSHClient(
-        host: host, port: port, username: username, passwordOrKey: _password);
+        host: host, port: port, username: _username, passwordOrKey: _password);
     String result;
     result = await _tryConnect(client).timeout(timeoutDuration, onTimeout: () {
       _loading.hide();
@@ -70,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
       case "connection_failure":
         _loading.hide();
         setState(() {
-          _errorText = "Wrong password.";
+          _errorText = "Wrong credentials.";
         });
         break;
       case "session_connected":
@@ -104,6 +112,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      child: TextFormField(
+                        validator: _validateUsername,
+                        decoration: new InputDecoration(
+                          labelText: "Username"
+                        ),
+                        onSaved: (value) => _username = value,
+                      ),
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32.0),
                       child: TextFormField(
