@@ -47,21 +47,24 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showLoading() {
     Overlay.of(_scaffoldContext)
         .insert(_loading = OverlayEntry(builder: (BuildContext context) {
-      return Stack(
-        children: <Widget>[
-          Opacity(
-            opacity: 0.3,
-            child: const ModalBarrier(dismissible: false, color: Colors.grey),
-          ),
-          AlertDialog(
-              title: Text("Attempting to connect..."),
-              content: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [CircularProgressIndicator()],
-              ))
-        ],
-      );
-    }));
+          return Stack(
+            children: <Widget>[
+              Opacity(
+                opacity: 0.3,
+                child: const ModalBarrier(dismissible: false, color: Colors.grey),
+              ),
+              AlertDialog(
+                  title: Text("Attempting to connect..."),
+                  content: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [CircularProgressIndicator()],
+                  )
+                )
+            ],
+          );
+        }
+      )
+    );
   }
 
   void _hideLoading() {
@@ -108,20 +111,21 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         title: Text("Login"),
       ),
-      body: Builder(builder: (BuildContext context) {
-        _scaffoldContext = context;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "MAGNET Login",
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 32,
+      body: Builder(
+        builder: (BuildContext context) {
+          _scaffoldContext = context;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "MAGNET Login",
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 32,
+                ),
               ),
-            ),
-            Form(
+              Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -132,19 +136,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: _validatePassword,
                         obscureText: true,
                         decoration: new InputDecoration(
-                            labelText: "Password", errorText: _errorText),
+                          labelText: "Password", errorText: _errorText
+                        ),
                         onSaved: (value) => _password = value,
                       ),
                     ),
                     Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16.0),
                         child: RaisedButton(
-                            onPressed: _submit, child: Text("Login")))
+                            onPressed: _submit, child: Text("Login")
+                        )
+                    )
                   ],
-                ))
-          ],
-        );
-      }),
+                )
+              )
+            ],
+          );
+        }
+      ),
     );
   }
 }
