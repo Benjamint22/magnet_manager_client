@@ -1,30 +1,9 @@
 import 'package:flutter/material.dart';
+import './fragment_home.dart';
+import './fragment_services.dart';
+import './fragmentdefinition.dart';
 import '../../classes/session.dart';
 import '../../classes/service.dart';
-
-Color colorFromStatus(ServiceStatus status) {
-  switch (status) {
-    case ServiceStatus.RUNNING:
-      return Colors.green;
-    case ServiceStatus.EXITED:
-      return Colors.red;
-    case ServiceStatus.FAILED:
-      return Colors.orange;
-  }
-  throw FallThroughError();
-}
-
-IconData iconFromStatus(ServiceStatus status) {
-  switch (status) {
-    case ServiceStatus.RUNNING:
-      return Icons.check_circle;
-    case ServiceStatus.EXITED:
-      return Icons.remove_circle;
-    case ServiceStatus.FAILED:
-      return Icons.error;
-  }
-  throw FallThroughError();
-}
 
 class ManageScreen extends StatefulWidget {
   ManageScreen(Session session, {Key key}) : _session = session, super(key: key);
@@ -36,17 +15,35 @@ class ManageScreen extends StatefulWidget {
 }
 
 class _ManageScreenState extends State<ManageScreen> {
-  _ManageScreenState(Session session) : _session = session {
-    session.listServices().toList().then((services) {
-      setState(() {
-        _services = services;
-      });
-    });
+  _ManageScreenState(Session session) : _session = session, _fragments = [
+    FragmentDefinition(
+      "Home",
+      Icons.home,
+      Builder(
+        builder: (context) {
+          return HomeFragment();
+        }
+      )
+    ),
+    FragmentDefinition(
+      "Services",
+      Icons.list,
+      Builder(
+        builder: (context) {
+          return ServicesFragment(session);
+        }
+      )
+    ),
+  ] {
+    _currentFragment = _fragments[0];
   }
 
   // Objects
-  Session _session;
-  List<Service> _services = [];
+  final List<FragmentDefinition> _fragments;
+  final Session _session;
+
+  // States
+  FragmentDefinition _currentFragment;
 
   @override
   Widget build(BuildContext context) {
@@ -54,25 +51,61 @@ class _ManageScreenState extends State<ManageScreen> {
       appBar: AppBar(
         title: Text("Manage MAGNET"),
       ),
-      body: Builder(
-        builder: (BuildContext context) {
-          return ListView.builder(
-            itemCount: _services.length,
-            physics: const AlwaysScrollableScrollPhysics (),
-            itemBuilder: (context, index) {
-              return ListTile(
-                key: Key(_services[index].name),
-                title: Text(_services[index].name),
-                subtitle: Text(_services[index].description),
-                leading: CircleAvatar(
-                  backgroundColor: colorFromStatus(_services[index].active),
-                  child: Icon(iconFromStatus(_services[index].active), color: Colors.white,),
-                )
-              );
-            },
-          );
-        },
+      drawer: Drawer(
+        child: Column(
+          children: [
+            DrawerHeader(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.exit_to_app,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context)..pop()..pop();
+                        },
+                      ),
+                    ]
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        _session.username,
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+              decoration: BoxDecoration(
+                color: ThemeData.light().primaryColor
+              ),
+            ),
+            Column(
+              children: _fragments.map((fragment) => ListTile(
+                leading: Icon(fragment.icon),
+                title: Text(fragment.name),
+                selected: fragment == _currentFragment,
+                onTap: () {
+                  setState(() {
+                    _currentFragment = fragment;
+                  });
+                  Navigator.of(context).pop();
+                }
+              )).toList()
+            )
+          ]
+        )
       ),
+      body: _currentFragment.fragment,
     );
   }
 }

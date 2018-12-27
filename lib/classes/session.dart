@@ -11,8 +11,11 @@ class TimeoutException implements Exception {}
 
 class Session {
   String _key;
+  String _username;
 
-  Session(String key) : _key = key;
+  String get username => _username;
+
+  Session(String key, String username) : _key = key, _username = username;
 
   Stream<Service> listServices() async* {
     Response response = await Requester.post(
@@ -50,7 +53,7 @@ class Session {
       else
         throw FallThroughError();
     } else if (response.statusCode == 200) {
-      return Session(response.jsonBody["key"]);
+      return Session(response.jsonBody["key"], login);
     }
     throw FallThroughError();
   }
