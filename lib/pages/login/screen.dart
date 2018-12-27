@@ -1,18 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:magnet_manager/widgets/loading.dart';
-import 'package:ssh/ssh.dart';
+import '../manage/screen.dart';
+import '../../widgets/loading.dart';
+import '../../classes/session.dart';
+import '../../classes/requester.dart';
 
-const String host = "benjamintaillon.com";
-const int port = 22;
-const Duration timeoutDuration = Duration(seconds: 6);
-
-const SnackBar timeoutSnackBar = SnackBar(
-  content: Text("Timed out. Could not reach server."),
-  duration: Duration(seconds: 4),
-);
+showSnackBar(BuildContext context, String message) {
+  Scaffold.of(context).showSnackBar(SnackBar(
+    content: Text(message),
+    duration: Duration(seconds: 4),
+  ));
+}
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({Key key}) : super(key: key);
@@ -30,20 +29,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Loading _loading;
 
   // States
-  String _errorText;
+  String _userErrorText;
+  String _passwordErrorText;
 
   // Field values
   String _username;
   String _password;
-
-  // Helper functions
-  Future<String> _tryConnect(SSHClient client) async {
-    try {
-      return await client.connect();
-    } on PlatformException catch (e) {
-      return e.code;
-    }
-  }
 
   // Events
   String _validateUsername(String value) {
@@ -67,23 +58,55 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     _loading.show("Attempting to connect...");
-    SSHClient client = SSHClient(
-        host: host, port: port, username: _username, passwordOrKey: _password);
-    String result;
-    result = await _tryConnect(client).timeout(timeoutDuration, onTimeout: () {
-      _loading.hide();
-      Scaffold.of(_scaffoldContext).showSnackBar(timeoutSnackBar);
+    Session session;
+    setState(() {
+      _userErrorText = _passwordErrorText = null;
     });
-    switch (result) {
-      case "connection_failure":
-        _loading.hide();
-        setState(() {
-          _errorText = "Wrong credentials.";
-        });
-        break;
-      case "session_connected":
-        break;
+    try {
+      session = await Session.login(_username, _password);
+    } on BadLoginException {
+      _loading.hide();
+      setState(() {
+        _userErrorText = "Wrong username.";
+      });
+    } on BadPasswordException {
+      _loading.hide();
+      setState(() {
+        _passwordErrorText = "Wrong password.";
+      });
+    } on TimeoutException {
+      _loading.hide();
+      showSnackBar(_scaffoldContext, "Timed out. Could not reach server.");
+    } on BadCertificateException {
+      _loading.hide();
+      showSnackBar(_scaffoldContext, "Could not validate certificate.");
     }
+    if (session != null) {
+      _loading.hide();
+      Navigator.push(
+        context, 
+        MaterialPageRoute(
+          builder: (context) => ManageScreen(session)
+        )
+      );
+    }
+    // SSHClient client = SSHClient(
+    //     host: host, port: port, username: _username, passwordOrKey: _password);
+    // String result;
+    // result = await _tryConnect(client).timeout(timeoutDuration, onTimeout: () {
+    //   _loading.hide();
+    //   Scaffold.of(_scaffoldContext).showSnackBar(timeoutSnackBar);
+    // });
+    // switch (result) {
+    //   case "connection_failure":
+    //     _loading.hide();
+    //     setState(() {
+    //       _errorText = "Wrong credentials.";
+    //     });
+    //     break;
+    //   case "session_connected":
+    //     break;
+    // }
   }
 
   @override
@@ -95,7 +118,11 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Builder(
         builder: (BuildContext context) {
           _scaffoldContext = context;
-          _loading = Loading(_scaffoldContext);
+          if (_loading == null) {
+            _loading = Loading(_scaffoldContext);
+          } else {
+            _loading.context = _scaffoldContext;
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -117,7 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: TextFormField(
                         validator: _validateUsername,
                         decoration: new InputDecoration(
-                          labelText: "Username"
+                          labelText: "Username",
+                          errorText: _userErrorText,
                         ),
                         onSaved: (value) => _username = value,
                       ),
@@ -128,7 +156,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: _validatePassword,
                         obscureText: true,
                         decoration: new InputDecoration(
-                          labelText: "Password", errorText: _errorText
+                          labelText: "Password", 
+                          errorText: _passwordErrorText,
                         ),
                         onSaved: (value) => _password = value,
                       ),

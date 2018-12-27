@@ -6,6 +6,10 @@ class Loading {
   BuildContext _context;
   OverlayEntry _overlay;
 
+  set context(BuildContext value) {
+    _context = value;
+  }
+
   void show(String message) {
     assert(_overlay == null);
     Overlay.of(_context).insert(
