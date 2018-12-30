@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
+import './fragmentdefinition.dart';
 
-class HomeFragment extends StatefulWidget {
-  HomeFragment({Key key}) : super(key: key);
+class HomeFragment extends StatefulFragment {
+  HomeFragment(Key scaffoldKey, Drawer drawer, {Key key}) : super(scaffoldKey, drawer, key: key);
 
   @override
-  State<HomeFragment> createState() => _HomeFragmentState();
+  FragmentState<HomeFragment> createStateFragment() => _HomeFragmentState();
 }
 
-class _HomeFragmentState extends State<HomeFragment> {
+class _HomeFragmentState extends FragmentState<HomeFragment> {
+  _HomeFragmentState();
+
   @override
-  Widget build(BuildContext context) {
+  Widget buildAppBar() {
+    return AppBar(
+      title: Text("Home"),
+    );
+  }
+
+  @override
+  Widget buildBody() {
     return Center(
       child: Text("This is the home screen.")
     );

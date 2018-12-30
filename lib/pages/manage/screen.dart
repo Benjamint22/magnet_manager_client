@@ -3,27 +3,27 @@ import './fragment_home.dart';
 import './fragment_services.dart';
 import './fragmentdefinition.dart';
 import '../../classes/session.dart';
-import '../../classes/service.dart';
 
 class ManageScreen extends StatefulWidget {
   ManageScreen(Session session, {Key key}) : _session = session, super(key: key);
 
-  Session _session;
+  final Session _session;
 
   @override
-  State<StatefulWidget> createState() => _ManageScreenState(_session);
+  State<StatefulWidget> createState() => ManageScreenState(_session);
 }
 
-class _ManageScreenState extends State<ManageScreen> {
+class ManageScreenState extends State<ManageScreen> {
   // Objects
   final List<FragmentDefinition> _fragments;
   final Session _session;
+  final GlobalKey _scaffoldKey = GlobalKey();
 
   // States
   FragmentDefinition _currentFragment;
 
   // Properties
-  Drawer get _drawer {
+  Drawer _getDrawer() {
     return Drawer(
       child: Column(
         children: [
@@ -78,25 +78,25 @@ class _ManageScreenState extends State<ManageScreen> {
     );
   }
 
-  _ManageScreenState(Session session) : 
+  ManageScreenState(Session session) : 
     _session = session,
     _fragments = [
-      FragmentDefinition(
+      FragmentDefinition<HomeFragment>(
         "Home",
         Icons.home,
-        Builder(
+        (scaffoldKey, drawer) => Builder(
           builder: (context) {
-            return HomeFragment();
-          }
+            return HomeFragment(scaffoldKey, drawer);
+          },
         )
       ),
-      FragmentDefinition(
+      FragmentDefinition<ServicesFragment>(
         "Services",
         Icons.list,
-        Builder(
+        (scaffoldKey, drawer) => Builder(
           builder: (context) {
-            return ServicesFragment(session);
-          }
+            return ServicesFragment(scaffoldKey, drawer, session);
+          },
         )
       ),
     ]
@@ -105,17 +105,16 @@ class _ManageScreenState extends State<ManageScreen> {
   }
 
   void _exitScreen() {
-    Navigator.of(context)..pop()..pop();
+    //Navigator.of(context)..pop()..pop();
   }
 
   @override
+  void initState() {
+      super.initState();
+    }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Manage MAGNET"),
-      ),
-      drawer: _drawer,
-      body: _currentFragment.fragment,
-    );
+    return _currentFragment.getScaffold(_scaffoldKey, _getDrawer());
   }
 }

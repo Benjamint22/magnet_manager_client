@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './fragmentdefinition.dart';
 import '../../classes/session.dart';
 import '../../classes/service.dart';
 
@@ -26,30 +27,40 @@ IconData iconFromStatus(ServiceStatus status) {
   throw FallThroughError();
 }
 
-class ServicesFragment extends StatefulWidget {
-  ServicesFragment(Session session, {Key key}) : _session = session, super(key: key);
+class ServicesFragment extends StatefulFragment {
+  ServicesFragment(Key scaffoldKey, Drawer drawer, Session session, {Key key}) : _session = session, super(scaffoldKey, drawer, key: key);
 
   final Session _session;
 
+  Session get session => _session;
+
   @override
-  State<ServicesFragment> createState() => _ServicesFragmentState(_session);
+  FragmentState<ServicesFragment> createStateFragment() => _ServicesFragmentState();
 }
 
-class _ServicesFragmentState extends State<ServicesFragment> {
-  _ServicesFragmentState(Session session) : _session = session {
-    session.listServices().toList().then((services) {
+class _ServicesFragmentState extends FragmentState<ServicesFragment> {
+  // Objects
+  List<Service> _services = [];
+
+  @override
+  void initState() {
+    widget.session.listServices().toList().then((services) {
       setState(() {
         _services = services;
       });
     });
+    super.initState();
   }
 
-  // Objects
-  Session _session;
-  List<Service> _services = [];
+  @override
+  Widget buildAppBar() {
+    return AppBar(
+      title: Text("Services"),
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody() {
     return ListView.builder(
       itemCount: _services.length,
       physics: const AlwaysScrollableScrollPhysics (),

@@ -1,13 +1,45 @@
 import 'package:flutter/material.dart';
 
-class FragmentDefinition {
+typedef Builder FragmentBuilder<T extends StatefulFragment>(Key scaffoldKey, Drawer drawer);
+
+abstract class FragmentState<T extends StatefulFragment> extends State<T> {
+  Widget buildAppBar();
+  Widget buildBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: widget._scaffoldKey,
+      appBar: buildAppBar(),
+      body: buildBody(),
+      drawer: widget._drawer,
+    );
+  }
+}
+
+abstract class StatefulFragment extends StatefulWidget {
+  final Drawer _drawer;
+  final Key _scaffoldKey;
+
+  StatefulFragment(this._scaffoldKey, this._drawer, {Key key}) : super(key: key);
+
+  FragmentState<StatefulFragment> createStateFragment();
+
+  @override
+  State<StatefulWidget> createState() => createStateFragment();
+}
+
+class FragmentDefinition<T extends StatefulFragment> {
   String _name;
   IconData _icon;
-  Builder _fragment;
+  FragmentBuilder<T> _builder;
 
   String get name => _name;
   IconData get icon => _icon;
-  Builder get fragment => _fragment;
 
-  FragmentDefinition(String name, IconData icon, Builder fragment) : _name = name, _icon = icon, _fragment = fragment;
+  Widget getScaffold(Key scaffoldKey, Drawer drawer) {
+    return _builder(scaffoldKey, drawer);
+  }
+
+  FragmentDefinition(this._name, this._icon, this._builder);
 }
