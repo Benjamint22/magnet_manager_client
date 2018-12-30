@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "package:pull_to_refresh/pull_to_refresh.dart";
 import './fragmentdefinition.dart';
 import '../../classes/session.dart';
 import '../../classes/service.dart';
@@ -41,6 +42,7 @@ class ServicesFragment extends StatefulFragment {
 class _ServicesFragmentState extends FragmentState<ServicesFragment> {
   // Objects
   final TextEditingController _searchController = TextEditingController();
+  final RefreshController _refreshController = RefreshController();
   List<Service> _allServices;
 
   // States
@@ -58,19 +60,22 @@ class _ServicesFragmentState extends FragmentState<ServicesFragment> {
     });
   }
 
+  Future<void> _refresh() async {
+    List<Service> services = await widget.session.listServices().toList();
+    _allServices = services;
+    setState(() {
+      _searching = false;
+      _displayedServices = _allServices;
+    });
+  }
+
   @override
   void initState() {
     setState(() {
       _searching = false;
       _allServices = _displayedServices = [];
     });
-    widget.session.listServices().toList().then((services) {
-      _allServices = services;
-      setState(() {
-        _searching = false;
-        _displayedServices = _allServices;
-      });
-    });
+    _refresh();
     super.initState();
   }
 
@@ -123,20 +128,27 @@ class _ServicesFragmentState extends FragmentState<ServicesFragment> {
 
   @override
   Widget buildBody() {
-    return ListView.builder(
-      itemCount: _displayedServices.length,
-      physics: const AlwaysScrollableScrollPhysics (),
-      itemBuilder: (context, index) {
-        return ListTile(
-          key: Key(_displayedServices[index].name),
-          title: Text(_displayedServices[index].name),
-          subtitle: Text(_displayedServices[index].description),
-          leading: CircleAvatar(
-            backgroundColor: colorFromStatus(_displayedServices[index].active),
-            child: Icon(iconFromStatus(_displayedServices[index].active), color: Colors.white,),
-          )
-        );
+    return SmartRefresher(
+      controller: _refreshController,
+      onRefresh: (_) async {
+        await _refresh();
+        _refreshController.sendBack(true, RefreshStatus.completed);
       },
+      child: ListView.builder(
+        itemCount: _displayedServices.length,
+        physics: const AlwaysScrollableScrollPhysics (),
+        itemBuilder: (context, index) {
+          return ListTile(
+            key: Key(_displayedServices[index].name),
+            title: Text(_displayedServices[index].name),
+            subtitle: Text(_displayedServices[index].description),
+            leading: CircleAvatar(
+              backgroundColor: colorFromStatus(_displayedServices[index].active),
+              child: Icon(iconFromStatus(_displayedServices[index].active), color: Colors.white,),
+            )
+          );
+        },
+      )
     );
   }
 }
