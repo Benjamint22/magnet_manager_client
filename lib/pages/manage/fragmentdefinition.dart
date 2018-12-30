@@ -21,7 +21,7 @@ abstract class StatefulFragment extends StatefulWidget {
   final Drawer _drawer;
   final Key _scaffoldKey;
 
-  StatefulFragment(this._scaffoldKey, this._drawer, {Key key}) : super(key: key);
+  const StatefulFragment(this._scaffoldKey, this._drawer, {Key key}) : super(key: key);
 
   FragmentState<StatefulFragment> createStateFragment();
 
@@ -30,9 +30,11 @@ abstract class StatefulFragment extends StatefulWidget {
 }
 
 class FragmentDefinition<T extends StatefulFragment> {
-  String _name;
-  IconData _icon;
-  FragmentBuilder<T> _builder;
+  final String _name;
+  final IconData _icon;
+  final FragmentBuilder<T> _builder;
+
+  const FragmentDefinition(this._name, this._icon, this._builder);
 
   String get name => _name;
   IconData get icon => _icon;
@@ -40,6 +42,4 @@ class FragmentDefinition<T extends StatefulFragment> {
   Widget getScaffold(Key scaffoldKey, Drawer drawer) {
     return _builder(scaffoldKey, drawer);
   }
-
-  FragmentDefinition(this._name, this._icon, this._builder);
 }

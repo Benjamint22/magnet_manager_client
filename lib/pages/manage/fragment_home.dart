@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import './fragmentdefinition.dart';
 
 class HomeFragment extends StatefulFragment {
-  HomeFragment(Key scaffoldKey, Drawer drawer, {Key key}) : super(scaffoldKey, drawer, key: key);
+  const HomeFragment(Key scaffoldKey, Drawer drawer, {Key key}) : super(scaffoldKey, drawer, key: key);
 
   @override
   FragmentState<HomeFragment> createStateFragment() => _HomeFragmentState();

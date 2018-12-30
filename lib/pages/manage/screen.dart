@@ -22,7 +22,36 @@ class ManageScreenState extends State<ManageScreen> {
   // States
   FragmentDefinition _currentFragment;
 
-  // Properties
+  ManageScreenState(Session session) : 
+    _session = session,
+    _fragments = [
+      FragmentDefinition<HomeFragment>(
+        "Home",
+        Icons.home,
+        (scaffoldKey, drawer) => Builder(
+          builder: (context) {
+            return HomeFragment(scaffoldKey, drawer);
+          },
+        )
+      ),
+      FragmentDefinition<ServicesFragment>(
+        "Services",
+        Icons.list,
+        (scaffoldKey, drawer) => Builder(
+          builder: (context) {
+            return ServicesFragment(scaffoldKey, drawer, session);
+          },
+        )
+      ),
+    ]
+  {
+    _currentFragment = _fragments[0];
+  }
+
+  void _exitScreen() {
+    Navigator.of(context)..pop()..pop();
+  }
+
   Drawer _getDrawer() {
     return Drawer(
       child: Column(
@@ -76,36 +105,6 @@ class ManageScreenState extends State<ManageScreen> {
         ]
       )
     );
-  }
-
-  ManageScreenState(Session session) : 
-    _session = session,
-    _fragments = [
-      FragmentDefinition<HomeFragment>(
-        "Home",
-        Icons.home,
-        (scaffoldKey, drawer) => Builder(
-          builder: (context) {
-            return HomeFragment(scaffoldKey, drawer);
-          },
-        )
-      ),
-      FragmentDefinition<ServicesFragment>(
-        "Services",
-        Icons.list,
-        (scaffoldKey, drawer) => Builder(
-          builder: (context) {
-            return ServicesFragment(scaffoldKey, drawer, session);
-          },
-        )
-      ),
-    ]
-  {
-    _currentFragment = _fragments[0];
-  }
-
-  void _exitScreen() {
-    //Navigator.of(context)..pop()..pop();
   }
 
   @override

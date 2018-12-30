@@ -28,9 +28,9 @@ IconData iconFromStatus(ServiceStatus status) {
 }
 
 class ServicesFragment extends StatefulFragment {
-  ServicesFragment(Key scaffoldKey, Drawer drawer, Session session, {Key key}) : _session = session, super(scaffoldKey, drawer, key: key);
-
   final Session _session;
+
+  const ServicesFragment(Key scaffoldKey, Drawer drawer, Session session, {Key key}) : _session = session, super(scaffoldKey, drawer, key: key);
 
   Session get session => _session;
 
@@ -40,13 +40,35 @@ class ServicesFragment extends StatefulFragment {
 
 class _ServicesFragmentState extends FragmentState<ServicesFragment> {
   // Objects
-  List<Service> _services = [];
+  final TextEditingController _searchController = TextEditingController();
+  List<Service> _allServices;
+
+  // States
+  List<Service> _displayedServices;
+  bool _searching;
+
+  void _onTyped(String text) {
+    final criteria = text.toLowerCase();
+    setState(() {
+      _displayedServices = _allServices.where(
+        (service) => 
+          service.name.toLowerCase().contains(criteria) || 
+          service.description.toLowerCase().contains(criteria)
+      ).toList();
+    });
+  }
 
   @override
   void initState() {
+    setState(() {
+      _searching = false;
+      _allServices = _displayedServices = [];
+    });
     widget.session.listServices().toList().then((services) {
+      _allServices = services;
       setState(() {
-        _services = services;
+        _searching = false;
+        _displayedServices = _allServices;
       });
     });
     super.initState();
@@ -54,24 +76,64 @@ class _ServicesFragmentState extends FragmentState<ServicesFragment> {
 
   @override
   Widget buildAppBar() {
+    if (!_searching) {
+      return AppBar(
+        title: Text("Services"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              setState(() {
+                _searching = true;
+                _searchController.text = "";
+              });
+            },
+          ),
+        ]
+      );
+    }
     return AppBar(
-      title: Text("Services"),
+      backgroundColor: Colors.white,
+      automaticallyImplyLeading: false,
+      title: TextField(
+        autofocus: true,
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: "Search a service...",
+          border: InputBorder.none,
+        ),
+        onChanged: _onTyped,
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.close,
+            color: Colors.black,
+          ),
+          onPressed: () {
+            setState(() {
+              _searching = false;
+              _displayedServices = _allServices;
+            });
+          },
+        ),
+      ]
     );
   }
 
   @override
   Widget buildBody() {
     return ListView.builder(
-      itemCount: _services.length,
+      itemCount: _displayedServices.length,
       physics: const AlwaysScrollableScrollPhysics (),
       itemBuilder: (context, index) {
         return ListTile(
-          key: Key(_services[index].name),
-          title: Text(_services[index].name),
-          subtitle: Text(_services[index].description),
+          key: Key(_displayedServices[index].name),
+          title: Text(_displayedServices[index].name),
+          subtitle: Text(_displayedServices[index].description),
           leading: CircleAvatar(
-            backgroundColor: colorFromStatus(_services[index].active),
-            child: Icon(iconFromStatus(_services[index].active), color: Colors.white,),
+            backgroundColor: colorFromStatus(_displayedServices[index].active),
+            child: Icon(iconFromStatus(_displayedServices[index].active), color: Colors.white,),
           )
         );
       },
