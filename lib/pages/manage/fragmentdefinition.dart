@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
-typedef Builder FragmentBuilder<T extends StatefulFragment>(Key scaffoldKey, Drawer drawer);
+abstract class StatefulFragment extends StatefulWidget {
+  final Drawer _drawer;
+  final Key _scaffoldKey;
+
+  const StatefulFragment(this._scaffoldKey, this._drawer, {Key key}) : super(key: key);
+
+  FragmentState<StatefulFragment> createStateFragment();
+
+  @override
+  State<StatefulWidget> createState() => createStateFragment();
+}
 
 abstract class FragmentState<T extends StatefulFragment> extends State<T> {
   Widget buildAppBar();
@@ -17,17 +27,7 @@ abstract class FragmentState<T extends StatefulFragment> extends State<T> {
   }
 }
 
-abstract class StatefulFragment extends StatefulWidget {
-  final Drawer _drawer;
-  final Key _scaffoldKey;
-
-  const StatefulFragment(this._scaffoldKey, this._drawer, {Key key}) : super(key: key);
-
-  FragmentState<StatefulFragment> createStateFragment();
-
-  @override
-  State<StatefulWidget> createState() => createStateFragment();
-}
+typedef Builder FragmentBuilder<T extends StatefulFragment>(Key scaffoldKey, Drawer drawer);
 
 class FragmentDefinition<T extends StatefulFragment> {
   final String _name;
