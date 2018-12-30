@@ -50,7 +50,7 @@ class _ServicesFragmentState extends FragmentState<ServicesFragment> {
   bool _searching;
 
   void _onTyped(String text) {
-    final criteria = text.toLowerCase();
+    final String criteria = text.toLowerCase();
     setState(() {
       _displayedServices = _allServices.where(
         (service) => 
