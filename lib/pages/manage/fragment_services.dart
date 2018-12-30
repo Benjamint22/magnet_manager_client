@@ -138,14 +138,21 @@ class _ServicesFragmentState extends FragmentState<ServicesFragment> {
         itemCount: _displayedServices.length,
         physics: const AlwaysScrollableScrollPhysics (),
         itemBuilder: (context, index) {
-          return ListTile(
-            key: Key(_displayedServices[index].name),
-            title: Text(_displayedServices[index].name),
-            subtitle: Text(_displayedServices[index].description),
-            leading: CircleAvatar(
-              backgroundColor: colorFromStatus(_displayedServices[index].active),
-              child: Icon(iconFromStatus(_displayedServices[index].active), color: Colors.white,),
-            )
+          Service currentService = _displayedServices[index];
+          return Container(
+            height: 72,
+            child: Align(
+              alignment: Alignment.center,
+              child: ListTile(
+                key: Key(currentService.name),
+                title: Text(currentService.name),
+                subtitle: Text(currentService.description),
+                leading: CircleAvatar(
+                  backgroundColor: colorFromStatus(currentService.active),
+                  child: Icon(iconFromStatus(currentService.active), color: Colors.white,),
+                ),
+              ),
+            ),
           );
         },
       )
