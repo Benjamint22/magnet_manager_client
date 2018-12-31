@@ -18,8 +18,8 @@ class Loading {
           return Stack(
             children: <Widget>[
               Opacity(
-                opacity: 0.3,
-                child: const ModalBarrier(dismissible: false, color: Colors.grey),
+                opacity: 0.5,
+                child: const ModalBarrier(dismissible: false, color: Colors.black),
               ),
               AlertDialog(
                 title: Text(message),
