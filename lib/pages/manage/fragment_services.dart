@@ -143,14 +143,44 @@ class _ServicesFragmentState extends FragmentState<ServicesFragment> {
             height: 72,
             child: Align(
               alignment: Alignment.center,
-              child: ListTile(
-                key: Key(currentService.name),
-                title: Text(currentService.name),
-                subtitle: Text(currentService.description),
-                leading: CircleAvatar(
-                  backgroundColor: colorFromStatus(currentService.active),
-                  child: Icon(iconFromStatus(currentService.active), color: Colors.white,),
-                ),
+              child: Row(
+                children:[
+                  Expanded(
+                    child: ListTile(
+                      key: Key(currentService.name),
+                      title: Text(currentService.name),
+                      subtitle: Text(currentService.description),
+                      leading: CircleAvatar(
+                        backgroundColor: colorFromStatus(currentService.active),
+                        child: Icon(
+                          iconFromStatus(currentService.active),
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  ),
+                  PopupMenuButton(
+                    itemBuilder: (context) {
+                      if (currentService.active == ServiceStatus.RUNNING)
+                      {
+                        return <PopupMenuItem>[
+                          PopupMenuItem(
+                            child: Text("Stop"),
+                          ),
+                          PopupMenuItem(
+                            child: Text("Restart"),
+                          )
+                        ];
+                      } else {
+                        return <PopupMenuItem>[
+                          PopupMenuItem(
+                            child: Text("Start"),
+                          )
+                        ];
+                      }
+                    },
+                  )
+                ]
               ),
             ),
           );
